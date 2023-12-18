@@ -26,7 +26,7 @@ export default function App() {
       "https://maps.googleapis.com/maps/api/place/textsearch/json";
     const input = searchText.trim();
     const location = `${(region.latitude, region.longitude)}&radius=2500`;
-    const url = `${googleApisUrl}?query=${input}&${location}&key=AIzaSyDaXlAMBaEplUlHsEGtVMs1flnU2EyV8Ts`;
+    const url = `${googleApisUrl}?query=${input}&${location}&key=Su_API_KEY`;
 
     fetch(url)
       .then(res => res.json())
