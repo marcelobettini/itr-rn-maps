@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import MapView, {
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native";
+import * as Location from "expo-location";
 import MapViewDirections from "react-native-maps-directions";
 const initialRegion = {
   latitude: -37.32,
@@ -71,6 +72,42 @@ export default function App() {
       })
       .catch(err => console.error(err));
   };
+
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        console.error("Location permission denied");
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
+  const requestLocationPermission = async () => {
+    try {
+      const permissionGranted = await checkLocationPermission();
+      if (!permissionGranted) {
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync();
+      const { latitude, longitude } = location.coords;
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    requestLocationPermission();
+  }, []);
   return (
     <View style={styles.container}>
       <MapView
