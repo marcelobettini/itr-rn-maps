@@ -1,5 +1,10 @@
 import React from "react";
-import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, {
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+  Marker,
+  Callout,
+} from "react-native-maps";
 import {
   StyleSheet,
   Text,
@@ -27,33 +32,35 @@ export default function App() {
     const input = searchText.trim();
     const location = `${(region.latitude, region.longitude)}&radius=2500`;
     const url = `${googleApisUrl}?query=${input}&${location}&key=AIzaSyDaXlAMBaEplUlHsEGtVMs1flnU2EyV8Ts`;
-
+    console.log(url);
     fetch(url)
       .then(res => res.json())
       .then(places => {
         if (places && places.results) {
           const coords = [];
           for (const place of places.results) {
+            console.log(place);
             coords.push({
               latitude: place.geometry.location.lat,
               longitude: place.geometry.location.lng,
             });
           }
+          setPlaces(places.results);
+          if (coords.length) {
+            map.current?.fitToCoordinates(coords, {
+              edgePadding: {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50,
+              },
+              animated: true,
+            });
+            Keyboard.dismiss();
+          }
         }
-        setPlaces(places.results);
-        if (coords.length) {
-          map.current?.fitToCoordinates(coords, {
-            edgePadding: {
-              top: 50,
-              right: 50,
-              bottom: 50,
-              left: 50,
-            },
-            animated: true,
-          });
-          Keyboard.dismiss();
-        }
-      });
+      })
+      .catch(err => console.error(err));
   };
   return (
     <View style={styles.container}>
@@ -65,7 +72,39 @@ export default function App() {
         region={region}
         showsMyLocationButton={true} //Nico sapeeeee
         onRegionChangeComplete={r => setRegion(r)}
-      />
+      >
+        {places.length
+          ? places.map(place => {
+              const coord = {
+                latitude: place.geometry.location.lat,
+                longitude: place.geometry.location.lng,
+              };
+              return (
+                <Marker
+                  key={place.place_id}
+                  coordinate={coord}
+                  pinColor="hotpink"
+                >
+                  <Callout>
+                    <View style={styles.calloutContainer}>
+                      <Text>{place.name}</Text>
+                      <Text>{place.formatted_address}</Text>
+                      <Text
+                        style={
+                          place.opening_hours?.open_now
+                            ? styles.open
+                            : styles.closed
+                        }
+                      >
+                        {place.opening_hours?.open_now ? "open" : "closed"}
+                      </Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              );
+            })
+          : null}
+      </MapView>
       <View>
         <TextInput
           placeholder="Search for a place..."
@@ -128,5 +167,18 @@ const styles = StyleSheet.create({
   btnText: {
     fontSize: 20,
     fontWeight: "800",
+  },
+  open: {
+    color: "green",
+  },
+  closed: {
+    color: "tomato",
+  },
+  calloutContainer: {
+    flexWrap: "wrap",
+    minHeight: 30,
+    maxHeight: "auto",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
