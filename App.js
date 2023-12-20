@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native";
+import MapViewDirections from "react-native-maps-directions";
 const initialRegion = {
   latitude: -37.32,
   longitude: -59.13,
@@ -25,6 +26,14 @@ export default function App() {
   const [region, setRegion] = React.useState(initialRegion);
   const [searchText, setSearchText] = React.useState("");
   const [places, setPlaces] = React.useState([]);
+  const [origin, setOrigin] = React.useState({
+    latitude: -37.32,
+    longitude: -59.13,
+  });
+  const [destination, setDestination] = React.useState({
+    latitude: -37.31,
+    longitude: -59.12,
+  });
   const searchPlace = () => {
     if (!searchText.trim().length) return;
     const googleApisUrl =
@@ -104,14 +113,38 @@ export default function App() {
               );
             })
           : null}
+        <Marker
+          draggable
+          title="origen"
+          coordinate={origin}
+          onDragEnd={direction => setOrigin(direction.nativeEvent.coordinate)}
+        />
+        <Marker
+          draggable
+          title="destino"
+          coordinate={destination}
+          onDragEnd={direction =>
+            setDestination(direction.nativeEvent.coordinate)
+          }
+        />
+
+        <MapViewDirections
+          mode="DRIVING"
+          strokeWidth={2}
+          strokeColor="blue"
+          origin={origin}
+          destination={destination}
+          apikey="AIzaSyDaXlAMBaEplUlHsEGtVMs1flnU2EyV8Ts"
+        />
       </MapView>
-      <View>
+      <View style={styles.searchContainer}>
         <TextInput
+          style={[styles.searchInput, styles.btnText]}
           placeholder="Search for a place..."
           onChangeText={setSearchText}
           autoCapitalize="characters"
         />
-        <TouchableOpacity onPress={searchPlace}>
+        <TouchableOpacity onPress={searchPlace} style={styles.btnSearch}>
           <Text>GO</Text>
         </TouchableOpacity>
       </View>
